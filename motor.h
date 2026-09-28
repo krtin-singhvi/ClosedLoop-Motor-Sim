@@ -12,5 +12,5 @@ class Motor{
     public:
         Motor(double J, double b, double K);
         void update(double V, double T, double delta); //delta is the time step (dt)
-        double getSpeed();
+        double getSpeed() const;
 };

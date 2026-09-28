@@ -10,20 +10,20 @@ void Motor::update(double _V, double _T, double delta){
     w = w + (K*V - b*w - T)*delta/J;
 }
         
-double Motor::getSpeed(){
+double Motor::getSpeed() const{
     return w;
 }
 
 
-int main(){
-    Motor m(10, 5, 2);
+ // int main(){
+//     Motor m(10, 5, 2);
 
-    for(int i = 0; i < 10000; i++){
-        m.update(5, 0, 0.001);
+//     for(int i = 0; i < 10000; i++){
+//         m.update(5, 0, 0.001);
         
-        if(i%10 == 0){
-            std::cout << m.getSpeed() << std::endl;
-        }
-    }
-}
-
+//         if(i%10 == 0){
+//             std::cout << m.getSpeed() << std::endl;
+//         }
+//     }
+// }
+// test function for motor
