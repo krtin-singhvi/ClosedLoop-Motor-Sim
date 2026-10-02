@@ -1,8 +1,9 @@
 #pragma once
 #include <vector>
 #include "motor.h"
-#include "controller.h"
+#include "pid_controller.h"
 #include "simulationResult.h"
+using namespace std;
 
 struct LoadEvent{
 	double time;
@@ -22,15 +23,15 @@ public:
 class Simulator{
 private:
 	Motor* motor;
-	Controller* controller;
+	PIDController* controller;
 	Comparator* comparator;
 	SimulationResult* result;
 	double target, dt, totalTime;
-	std::vector<LoadEvent> loadSchedule;
-	std::vector<FrictionEvent> frictionSchedule;
+	vector<LoadEvent> loadSchedule;
+	vector<FrictionEvent> frictionSchedule;
 
 public:
-	Simulator(Motor* m, Controller* ctrl, Comparator *cmp,
+	Simulator(Motor* m, PIDController* ctrl, Comparator *cmp,
 		      SimulationResult *r, double target, double dt, double time);
 	
 	void scheduleLoad(double atTime, double load);
