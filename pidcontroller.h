@@ -1,7 +1,7 @@
 #pragma once
 #include "pid_components.h"
 
-class PIDController : {
+class PIDController {
 	private:
     		Proportional proportional;
     		Integrator integrator;
