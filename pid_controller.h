@@ -7,20 +7,20 @@ class Proportional {
 
 	public:
     		Proportional(double Kp);
-		void update(double e_t);
-		double getOutput() const;
+			void update(double e_t);
+			double getOutput() const;
 };
 
 
 class Integrator {
 	private:
-		const double Ki; //gain
-		double control; //output
+			const double Ki; //gain
+			double control; //output
 
 	public:
     		Integrator(double Ki);
-		void update(double e_t, double delta);
-		double getOutput() const;
+			void update(double e_t, double delta);
+			double getOutput() const;
 };
 
 
@@ -32,8 +32,8 @@ class Derivative {
 
 	public:
     		Derivative(double Kd);
-		void update(double e_t, double delta);
-		double getOutput() const;
+			void update(double e_t, double delta);
+			double getOutput() const;
 };
 
 
@@ -45,5 +45,5 @@ class PIDController {
 
 	public:
     		PIDController(double Kp, double Ki, double Kd);
-		double compute(double error, double dt);
+			double compute(double error, double dt);
 };
