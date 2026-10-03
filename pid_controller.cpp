@@ -1,4 +1,4 @@
-#include "pid_Controller.h"
+#include "pid_controller.h"
 
 PIDController::PIDController(double _Kp, double _Ki, double _Kd) : Kp(_Kp), proportionalControl(0), Ki(_Ki), integralControl(0), Kd(_Kd), derivativeControl(0), prev_e_t(0) {}
 
