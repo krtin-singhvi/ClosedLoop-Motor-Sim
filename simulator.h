@@ -3,17 +3,7 @@
 #include "motor.h"
 #include "pid_controller.h"
 #include "simulationResult.h"
-using namespace std;
-
-struct LoadEvent{
-	double time;
-	double load;
-};
-
-struct FrictionEvent{
-	double time;
-	double friction;
-};
+#include "variation.h"
 
 class Comparator{
 public:
@@ -27,18 +17,12 @@ private:
 	Comparator* comparator;
 	SimulationResult* result;
 	double target, dt, totalTime;
-	vector<LoadEvent> loadSchedule;
-	vector<FrictionEvent> frictionSchedule;
+	std::vector<Variation> variations;
 
 public:
 	Simulator(Motor* m, PIDController* ctrl, Comparator *cmp,
 		      SimulationResult *r, double target, double dt, double time);
-	
-	void scheduleLoad(double atTime, double load);
-	void scheduleFriction(double atTime, double friction);
-	
-	void scheduleAllLoads(const std::vector<LoadEvent>& loads);
-	void scheduleAllFriction(const std::vector<FrictionEvent>& frictions);
+	void addVariation(const Variation& variation);
 	void runSimulation();
 };
 	
