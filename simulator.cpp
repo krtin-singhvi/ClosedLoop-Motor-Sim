@@ -70,7 +70,7 @@ void Simulator::runSimulation() {
 	
 		double error = comparator->getError(target, actualSpeed);	
 
-		double controlInput = controller->calculate(error, dt);		// Compute control effort
+		double controlInput = controller->compute(error, dt);		// Compute control effort
 
 		result->write(currentTime, target, actualSpeed, error, controlInput);	
 
