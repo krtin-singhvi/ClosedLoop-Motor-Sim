@@ -8,7 +8,7 @@ double Comparator::getError(double targetSpeed, double actualSpeed) const{
 }
 
 // Complete wiring of components
-Simulator::Simulator(Motor* m, Controller* ctrl, Comparator* cmp, 
+Simulator::Simulator(Motor* m, PIDController* ctrl, Comparator* cmp, 
 			     SimulationResult* r, double target_, double dt_, double time) : 
 			     motor(m), controller(ctrl), comparator(cmp), result(r),
 		             target(target_), dt(dt_), totalTime(time) 
