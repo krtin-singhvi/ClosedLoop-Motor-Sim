@@ -11,7 +11,7 @@ class Motor{
     
     public:
         Motor(double J, double b, double K);
-        void update(double V, double delta); //delta is the time step (dt)
+        void updateSpeed(double V, double delta); //delta is the time step (dt)
         double getSpeed() const;
         void addLoad(double load);
         void addFriction(double friction);

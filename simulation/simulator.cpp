@@ -5,12 +5,8 @@
 
 using namespace std;
 
-double Comparator::getError(double targetSpeed, double actualSpeed) const{
-        return targetSpeed - actualSpeed;
-}
-
 // Complete wiring of components
-Simulator::Simulator(Motor* m, PIDController* ctrl, Comparator* cmp, 
+Simulator::Simulator(Motor* m, Controller* ctrl, Comparator* cmp, 
 			     SimulationResult* r, double target_, double dt_, double time) : 
 			     motor(m), controller(ctrl), comparator(cmp), result(r),
 		             target(target_), dt(dt_), totalTime(time) 
@@ -44,8 +40,8 @@ void Simulator::runSimulation() {
 		while(variationIdx < variations.size() && currentTime >= variations[variationIdx].getTime()){
 			double loadChange = variations[variationIdx].getLoadChange();
 			double frictionChange = variations[variationIdx].getFrictionChange();
-			motor->varyLoad(loadChange);
-			motor->varyFriction(frictionChange);
+			motor->addLoad(loadChange);
+			motor->addFriction(frictionChange);
 
 			cout << "[Time: " << currentTime << "s] ";
 			if(loadChange != 0){
@@ -68,7 +64,7 @@ void Simulator::runSimulation() {
 
 		result->write(currentTime, target, actualSpeed, error, controlInput);	
 
-		motor->update(controlInput, dt);	// Update for next timestamp
+		motor->updateSpeed(controlInput, dt);	// Update for next timestamp
 		currentTime += dt;
 	}
 	cout << "Simulation Complete.." << endl;

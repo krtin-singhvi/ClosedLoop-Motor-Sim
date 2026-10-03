@@ -9,7 +9,9 @@ TARGET = main
 
 SOURCES = main.cpp \
           components/motor.cpp \
-          components/pid_controller.cpp \
+          components/pid_components.cpp \
+		  components/components.cpp \
+		  components/controller.cpp \
           output/consoleoutput.cpp \
           output/csvoutput.cpp \
           simulation/device.cpp \

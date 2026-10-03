@@ -1,6 +1,7 @@
 #include "csvoutput.h"
 #include <fstream>
 #include <iostream>
+#include <stdexcept>
 
 using namespace std;
 
@@ -15,7 +16,7 @@ void CSVOutput::output(const SimulationResult& result)
 
     if (!file.is_open())
     {
-        throw "Error: Could not open file";
+        throw std::runtime_error("Error: Could not open file: " + filename);
     }
     // this can be because of permission problem or invalid file name or 
     // directory doesn't exist

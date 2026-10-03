@@ -3,29 +3,28 @@
 Device::Device(double _Kp,
                double _Ki,
                double _Kd,
+               double maxv,
+               double minv,
                double j,
                double b,
                double k,
-               double tar,
-               double DT,
-               double ti)
+               double target,
+               double dt,
+               double time)
+    : pidc(_Kp, _Ki, _Kd, maxv, minv), motor(j, b, k)
 {
-    PIDController pidc(_Kp, _Ki, _Kd);
-
-    Motor m(j, b, k);
-
-    Comparator cmp;
-
-    SimulationResult result;
-
     Simulator s(
-        &m,
+        &motor,
         &pidc,
         &cmp,
         &result,
-        tar,
-        DT,
-        ti
+        target,
+        dt,
+        time
     );
     s.runSimulation();
+}
+
+const SimulationResult& Device::getResult() const {
+    return result;
 }
