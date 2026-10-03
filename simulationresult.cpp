@@ -1,4 +1,4 @@
-#include "simulationResult.h"
+#include "simulationresult.h"
 
 using namespace std;
 
