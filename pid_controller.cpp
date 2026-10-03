@@ -22,7 +22,7 @@ void PIDController::updateDerivative(double e_t, double delta)
 }
 
 // Overall PID controller
-double PIDController::compute(double error, double dt)
+double PIDController::update(double error, double dt)
 {
     updateProportional(error);
     updateIntegral(error, dt);

@@ -2,7 +2,7 @@
 #include <vector>
 #include "motor.h"
 #include "pid_controller.h"
-#include "simulationResult.h"
+#include "simulationresult.h"
 using namespace std;
 
 struct LoadEvent{

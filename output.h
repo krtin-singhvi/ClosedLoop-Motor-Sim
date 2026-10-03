@@ -1,7 +1,7 @@
 #ifndef OUTPUT_H
 #define OUTPUT_H
 
-#include "simulationResult.h"
+#include "simulationresult.h"
 
 class Output
 {

@@ -6,8 +6,6 @@ Device::Device(double _Kp,
                double j,
                double b,
                double k,
-	       ,
-	       ,
                double tar,
                double DT,
                double ti)

@@ -28,5 +28,5 @@ public:
     void updateDerivative(double e_t, double delta);
 
     // Overall PID output
-    double compute(double error, double dt);
+    double update(double error, double dt);
 };

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "PIDController.h"
+#include "pid_controller.h"
 #include "motor.h"
 #include "simulator.h"
 
@@ -12,8 +12,6 @@ public:
            double j,
            double b,
            double k,
-	   ,
-	   ,
            double tar,
            double DT,
            double ti);
