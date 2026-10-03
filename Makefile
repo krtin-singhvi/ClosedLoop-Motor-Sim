@@ -14,7 +14,8 @@ SOURCES = main.cpp \
           output/csvoutput.cpp \
           simulation/device.cpp \
           simulation/simulationresult.cpp \
-          simulation/simulator.cpp
+          simulation/simulator.cpp \
+		  simulation/variation.cpp \
 
 OBJECTS = $(SOURCES:.cpp=.o)
 

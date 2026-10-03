@@ -1,6 +1,8 @@
 #include <iostream>
 #include "simulator.h"
 #include <stdexcept>
+#include <algorithm>
+
 using namespace std;
 
 double Comparator::getError(double targetSpeed, double actualSpeed) const{
@@ -21,49 +23,41 @@ Simulator::Simulator(Motor* m, PIDController* ctrl, Comparator* cmp,
 		throw invalid_argument("Simulator: total time must be positive");
 }
 
-// To introduce load at any given time
-void Simulator::scheduleLoad(double atTime, double load){
-	loadSchedule.push_back({atTime, load});
-}
-
-void Simulator::scheduleAllLoads(const vector<LoadEvent>& loads){
-	loadSchedule.insert(loadSchedule.end(), loads.begin(), loads.end());
-}
-
-void Simulator::scheduleFriction(double atTime, double friction){
-	frictionSchedule.push_back({atTime, friction});
-}
-
-void Simulator::scheduleAllFriction(const vector<FrictionEvent>& frictions){
-	frictionSchedule.insert(frictionSchedule.end(), frictions.begin(), frictions.end());
+void Simulator::addVariation(const Variation& variation){
+	variations.push_back(variation);
 }
 
 void Simulator::runSimulation() {
 	double currentTime = 0.0;
-
-	vector<bool> loadApplied(loadSchedule.size(), false);
-	vector<bool> frictionApplied(frictionSchedule.size(), false);
+	
+	sort(variations.begin(), variations.end(),
+	     [](const Variation& a, const Variation& b){
+	     return a.getTime() < b.getTime();
+	     });
+	
+	int variationIdx = 0;
 
 	cout << "Starting simulation for " << totalTime << " seconds.." << endl;
 	
 	while(currentTime <= totalTime){
 		// Process scheduled loads
-		for(int i = 0; i < loadSchedule.size(); i++){
-			if(!loadApplied[i] && currentTime >= loadSchedule[i].time){	
-				motor->setLoad(loadSchedule[i].load);
-				loadApplied[i] = true;
-				cout << "[Time: " << currentTime << "s] Applied Load Torque = " << loadSchedule[i].load << " N.m" << endl;
+		while(variationIdx < variations.size() && currentTime >= variations[variationIdx].getTime()){
+			double loadChange = variations[variationIdx].getLoadChange();
+			double frictionChange = variations[variationIdx].getFrictionChange();
+			motor->varyLoad(loadChange);
+			motor->varyFriction(frictionChange);
+
+			cout << "[Time: " << currentTime << "s] ";
+			if(loadChange != 0){
+				cout << "Load changed by " << loadChange << " N.m ";
 			}
+			if(frictionChange != 0){
+				cout << "Friction changed by " << frictionChange << " N.m.s/rad";
+			}
+			cout << endl;
+			variationIdx++;
 		}
 
-		// Process scheduled friction changes
-		for(int i = 0; i < frictionSchedule.size(); i++){
-			if(!frictionApplied[i] && currentTime >= frictionSchedule[i].time){
-				motor->setFriction(frictionSchedule[i].friction);
-				frictionApplied[i] = true;
-				cout << "[Time: " << currentTime << "s] Applied Friction = " << frictionSchedule[i].friction << " N.m.s/rad" << endl;
-			}
-		}	
 
 		
 		double actualSpeed = motor->getSpeed();	
