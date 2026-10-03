@@ -19,14 +19,14 @@ public:
     PIDController(double Kp, double Ki, double Kd);
 
     // P component
-    void updateProportional(double e_t);
+    void computeProportional(double e_t);
 
     // I component
-    void updateIntegral(double e_t, double delta);
+    void computeIntegral(double e_t, double delta);
 
     // D component
-    void updateDerivative(double e_t, double delta);
+    void computeDerivative(double e_t, double delta);
 
     // Overall PID output
-    double update(double error, double dt);
+    double compute(double error, double dt);
 };
