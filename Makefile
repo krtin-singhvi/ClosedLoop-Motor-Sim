@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -Wall -Wextra -std=c++17 \
+CXXFLAGS = -Wall -Wextra -std=c++17 -pthread \
            -Icomponents \
            -Ioutput \
            -Isimulation \
@@ -25,7 +25,7 @@ DEPENDS = $(OBJECTS:.o=.d)
 
 
 $(TARGET): $(OBJECTS)
-	$(CXX) $(OBJECTS) -o $(TARGET)
+	$(CXX) $(OBJECTS) -pthread -o $(TARGET)
 
 
 %.o: %.cpp
