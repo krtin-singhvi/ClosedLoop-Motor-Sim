@@ -29,16 +29,15 @@ The project supports two execution modes:
 ### What Is a PID Controller?
 
 A PID (Proportional–Integral–Derivative) controller is a feedback control mechanism widely used in industrial systems. It continuously:
-1. Measures the **error** (difference between the desired target and the actual value).
-2. Computes a **control signal** based on three terms:
+1. Computes a **control signal** based on three terms:
    - **P (Proportional)**: reacts to the current error magnitude.
    - **I (Integral)**: accumulates past errors to eliminate steady-state offset.
    - **D (Derivative)**: predicts future error based on its rate of change.
-3. Applies the control signal to the system (here, a voltage to the motor).
+2. Applies the control signal to the system (here, a voltage to the motor).
 
 ### What Is the DC Motor Simulation?
 
-The motor is modeled as a first-order system with inertia, friction, and an optional external load torque. The simulation uses **Euler integration** to step forward in time, updating the motor's angular speed based on applied voltage, friction, and load.
+The motor is modeled as a first-order system with inertia, friction, and an optional external load torque. The simulation uses small time steps (dt) to go forward in time, updating the motor's angular speed based on applied voltage, friction, and load.
 
 ---
 
@@ -228,38 +227,27 @@ flowchart LR
 pid-motor-controller/
 ├── main.cpp                          # Entry point, user input, thread orchestration
 ├── Makefile                          # Build system
-├── README.md                         # Brief project readme
-├── DOCUMENTATION.md                  # This file
+├── README.md                         # readme
+├── DOCUMENTATION.md                  # documentation
 │
-├── components/                       # Core simulation components
-│   ├── components.h                  # Clamp and Comparator class declarations
-│   ├── components.cpp                # Clamp and Comparator implementations
-│   ├── controller.h                  # PID Controller (composition of P+I+D+Clamp)
-│   ├── controller.cpp                # Controller implementation with anti-windup
-│   ├── motor.h                       # DC motor model declaration
-│   ├── motor.cpp                     # Motor physics (Euler integration)
-│   ├── pid_components.h              # Proportional, Integral, Derivative classes
-│   └── pid_components.cpp            # P, I, D implementations
+├── components/                      
+│   ├── components.*                  # Clamp and Comparator class declarations
+│   ├── controller.*                  # PID Controller (P+I+D+Clamp)
+│   ├── motor.*                       # DC motor model
+│   ├── pid_components.*              # Proportional, Integral, Derivative classes
 │
-├── simulation/                       # Simulation engine
-│   ├── device.h                      # High-level Device facade
-│   ├── device.cpp                    # Device wiring of all components
-│   ├── simulator.h                   # Simulation loop (single & multithreaded)
-│   ├── simulator.cpp                 # Simulation loop implementations
-│   ├── simulationresult.h            # SimulationData struct + SimulationResult class
-│   ├── simulationresult.cpp          # Thread-safe result storage
-│   ├── variation.h                   # Scheduled motor parameter changes
-│   ├── variation.cpp                 # Variation implementation
+├── simulation/                      
+│   ├── device.*                      # Device wiring of all components
+│   ├── simulator.*                   # Simulation loop (single & multithreaded)
+│   ├── simulationresult.*            # SimulationData struct + SimulationResult class
+│   ├── variation.*                   # Scheduled motor parameter changes
 │   └── threadSafeQueue.h             # Template thread-safe queue (header-only)
 │
-└── output/                           # Output formatters
+└── output/                           
     ├── output.h                      # Abstract Output interface
-    ├── consoleoutput.h               # Console output declaration
-    ├── consoleoutput.cpp             # Formatted table output to stdout
-    ├── csvoutput.h                   # CSV output declaration
-    └── csvoutput.cpp                 # CSV file output
+    ├── consoleoutput.*               # Formatted table output to stdout
+    ├── csvoutput.*                   # CSV file output
 ```
-
 ---
 
 ## 4. Class Reference
@@ -268,14 +256,14 @@ pid-motor-controller/
 
 **Source:** [motor.h](components/motor.h) | [motor.cpp](components/motor.cpp)
 
-Simulates a DC motor using first-order dynamics and explicit Euler integration.
+Simulates a DC motor using first-order dynamics.
 
 **Member Variables:**
 
 | Variable | Type | Description |
 |----------|------|-------------|
 | `J` | `const double` | Moment of inertia (kg·m²) |
-| `b` | `double` | Friction coefficient (N·m·s/rad) — mutable via `addFriction()` |
+| `b` | `double` | Friction coefficient (N·m·s/rad) |
 | `K` | `const double` | Motor torque constant (N·m/V) |
 | `V` | `double` | Current input voltage |
 | `w` | `double` | Current angular speed (rad/s) |
@@ -292,7 +280,7 @@ Initialises `w`, `T`, and `V` to zero.
 
 | Method | Signature | Description |
 |--------|-----------|-------------|
-| `updateSpeed` | `void updateSpeed(double V, double delta)` | Applies Euler integration: `w = w + (K*V - b*w - T) * delta / J` |
+| `updateSpeed` | `void updateSpeed(double V, double delta)` | Applies integration in steps: `w = w + (K*V - b*w - T) * delta / J` |
 | `getSpeed` | `double getSpeed() const` | Returns current angular speed `w` |
 | `addLoad` | `void addLoad(double load)` | Adds to the load torque `T`, clamped to ≥ 0 |
 | `addFriction` | `void addFriction(double friction)` | Adds to friction `b`, ignored if result would be negative |
@@ -323,7 +311,7 @@ Computes the proportional term of the PID controller.
 
 **Source:** [pid_components.h](components/pid_components.h) | [pid_components.cpp](components/pid_components.cpp)
 
-Computes the integral term using rectangular accumulation.
+Computes the integral term using accumulation.
 
 | Variable | Type | Description |
 |----------|------|-------------|
@@ -335,7 +323,7 @@ Computes the integral term using rectangular accumulation.
 | Method | Description |
 |--------|-------------|
 | `compute(e_t, dt)` | Accumulates: `control += e_t * dt` |
-| `getControl()` | Returns `Ki * control` (gain applied on read) |
+| `getControl()` | Returns `Ki * control` |
 
 ---
 
@@ -343,14 +331,14 @@ Computes the integral term using rectangular accumulation.
 
 **Source:** [pid_components.h](components/pid_components.h) | [pid_components.cpp](components/pid_components.cpp)
 
-Computes the derivative term using backward differencing.
+Computes the derivative term by storing previous error.
 
 | Variable | Type | Description |
 |----------|------|-------------|
 | `Kd` | `const double` | Derivative gain |
 | `prev_e_t` | `double` | Previous error value |
 | `control` | `double` | Latest rate of change |
-| `firstCall` | `bool` | Suppresses derivative spike on the first call |
+| `firstCall` | `bool` | Removes derivative kick on the first call |
 
 **Methods:**
 
@@ -420,7 +408,7 @@ Computation steps:
 
 **Source:** [simulationresult.h](simulation/simulationresult.h)
 
-Plain data structure holding one simulation sample.
+Data structure holding one simulation sample per time step.
 
 | Field | Type | Description |
 |-------|------|-------------|
@@ -467,7 +455,7 @@ Represents a scheduled change to the motor's load torque and/or friction coeffic
 
 **Constructor:** `Variation(double time, double loadChange, double frictionChange)`
 
-**Methods:** `getTime()`, `getLoadChange()`, `getFrictionChange()` — all return their respective values as `double`.
+**Methods:** `getTime()`, `getLoadChange()`, `getFrictionChange()` — all return their respective values.
 
 ---
 
@@ -495,7 +483,7 @@ Runs the simulation loop in either single-threaded or multithreaded mode.
 | Method | Description |
 |--------|-------------|
 | `addVariation(variation)` | Appends a `Variation` to the list. |
-| `runSimulation()` | Single-threaded simulation loop. Sorts variations by time, iterates for `totalSteps = (int)(totalTime/dt) + 1` steps, applying variations, computing PID, recording data, and updating the motor at each step. |
+| `runSimulation()` | Single-threaded simulation loop. Sorts variations by time, iterates for `totalSteps = (totalTime/dt) + 1` steps, applying variations, computing PID, recording data, and updating the motor at each step. |
 | `runMultiThreaded(controlQueue, speedQueue, consoleQueue, csvQueue)` | Launches motor and controller threads. The motor thread handles physics and variations; the controller thread handles PID computation, recording, and dispatching to output queues. Both threads join before returning. |
 
 ---
@@ -504,7 +492,7 @@ Runs the simulation loop in either single-threaded or multithreaded mode.
 
 **Source:** [device.h](simulation/device.h) | [device.cpp](simulation/device.cpp)
 
-High-level facade that owns all components and wires them together.
+High-level class that owns all components and wires them together.
 
 **Constructor:**
 
@@ -533,7 +521,7 @@ Device(
 
 **Source:** [output.h](output/output.h)
 
-Abstract interface for simulation output formatters.
+Abstract interface for simulation output.
 
 ```cpp
 class Output {
@@ -555,12 +543,12 @@ Prints simulation results as a formatted table to `stdout`.
 
 | Method | Description |
 |--------|-------------|
-| `output(result)` | Batch mode — prints header, all rows, footer, and total count. |
+| `output(result)` | Prints header, all rows, footer, and total count. |
 | `start()` | Prints the table header and column labels. |
 | `outputRow(row)` | Prints a single formatted data row. |
 | `finish()` | Prints the closing separator line. |
 
-The batch `output()` method is used with single-threaded mode. The `start()`/`outputRow()`/`finish()` trio is used by the console thread in multithreaded mode for streaming output.
+The batch `output()` method is used with single-threaded mode. The `start()`/`outputRow()`/`finish()` is in multithreaded mode for streaming output.
 
 ---
 
@@ -579,7 +567,7 @@ Writes simulation results to a CSV file.
 
 | Method | Description |
 |--------|-------------|
-| `output(result)` | Batch mode — opens file, writes header + all rows, closes file. |
+| `output(result)` | Opens file, writes header + all rows, closes file. |
 | `start()` | Opens the file and writes the CSV header line. |
 | `outputRow(row)` | Writes one comma-separated row. |
 | `finish()` | Closes the file and prints a confirmation message. |
@@ -596,7 +584,7 @@ A header-only, template-based, thread-safe FIFO queue used for inter-thread comm
 
 | Variable | Type | Description |
 |----------|------|-------------|
-| `queue` | `std::queue<T>` | Underlying FIFO data structure |
+| `queue` | `std::queue<T>` | Underlying queue data structure |
 | `mutex` | `std::mutex` | Mutual exclusion lock |
 | `condition` | `std::condition_variable` | Signals waiting consumers when data arrives or queue closes |
 | `closed` | `bool` | When `true`, no new items can be pushed and waiting pops return `false` once the queue drains |
@@ -611,105 +599,7 @@ A header-only, template-based, thread-safe FIFO queue used for inter-thread comm
 
 ---
 
-## 5. Simulation Model
-
-### Physics Equation
-
-The motor's angular speed `w` evolves according to Newton's second law for rotation:
-
-```
-J · dw/dt = K · V - b · w - T
-```
-
-Where:
-- `J` — moment of inertia (kg·m²)
-- `K` — motor torque constant (relates voltage to torque)
-- `V` — input voltage from the controller
-- `b` — friction coefficient (viscous damping)
-- `w` — angular speed (rad/s)
-- `T` — external load torque (N·m)
-
-### Euler Integration
-
-The continuous equation is discretised using **explicit (forward) Euler** method:
-
-```
-w(next) = w + (K · V - b · w - T) · dt / J
-```
-
-Where `dt` is the simulation time step.
-
-### Simulation Loop (each step)
-
-1. **Apply variations** — if any `Variation` is scheduled at or before the current time, add its load and friction changes to the motor.
-2. **Read speed** — get the motor's current angular speed.
-3. **Compute error** — `error = targetSpeed - actualSpeed`.
-4. **Compute control** — pass the error through the PID controller to get a clamped voltage.
-5. **Record sample** — store `{time, targetSpeed, actualSpeed, error, controlInput}` in `SimulationResult`.
-6. **Update motor** — apply the control voltage and advance the motor's speed by one time step.
-7. **Advance time** — `currentTime += dt`.
-
-### Step Count
-
-Both single-threaded and multithreaded modes use the same formula:
-
-```cpp
-int totalSteps = static_cast<int>(totalTime / dt) + 1;
-```
-
-With `totalTime = 25.0` and `dt = 0.01`, this produces **2501 samples** (time 0.00 through 25.00).
-
----
-
-## 6. PID Controller
-
-### Individual Components
-
-**Proportional (P):**
-
-```
-P = Kp · e(t)
-```
-
-Reacts proportionally to the current error. Larger Kp gives faster response but can cause overshoot.
-
-**Integral (I):**
-
-```
-I = Ki · ∫ e(τ) dτ
-```
-
-Implemented as a running sum: `control += e_t * dt`. The gain Ki is applied at read time. Eliminates steady-state error by accumulating past errors.
-
-**Derivative (D):**
-
-```
-D = Kd · de(t)/dt
-```
-
-Implemented as backward difference: `control = (e_t - prev_e_t) / dt`. On the very first call, the derivative output is zero to avoid a startup spike. Dampens oscillations by reacting to the rate of change.
-
-### Combined Output
-
-```
-output = clamp(P + I + D, minVoltage, maxVoltage)
-```
-
-### Anti-Windup
-
-**The problem:** When the output is saturated (clamped), the integral term keeps accumulating error even though the system can't respond to a larger signal. When the error eventually reverses, the accumulated integral causes a delayed, excessive response — this is called **integral windup**.
-
-**The solution in this codebase:** Before updating the integral, the controller checks:
-1. Would the tentative output `(P + I_old + D)` be clamped?
-2. Does the error have the same sign as the tentative output?
-
-If **both** conditions are true, the integral is frozen — `I.compute(0, dt)` is called instead of `I.compute(error, dt)`. This prevents the integral from growing further in the direction that's already saturated.
-
-See: [controller.cpp](components/controller.cpp)
-
----
-
-## 7. Multithreading
+## 5. Multithreading
 
 ### Overview
 
@@ -770,40 +660,6 @@ csvThread.join();         // Wait for file writing
 `join()` blocks the calling thread until the target thread finishes execution. This guarantees all output is complete before the program prints "Simulation finished successfully."
 
 ---
-
-## 8. Variations System
-
-Variations allow you to schedule changes to the motor's **load torque** and **friction coefficient** at specific simulation times.
-
-### Adding Variations
-
-```cpp
-dev.addVariation(Variation(
-    5.0,    // time: apply at 5 seconds
-    0.05,   // load torque change: +0.05 N·m
-    0.0     // friction change: none
-));
-```
-
-### How They're Applied
-
-1. Before simulation, all variations are **sorted by time**.
-2. At each simulation step, if the current time has reached or passed a variation's scheduled time, its changes are applied to the motor.
-3. **Load torque** (`addLoad`): the new value is `T + loadChange`, clamped to ≥ 0.
-4. **Friction** (`addFriction`): the new value is `b + frictionChange`, with the change rejected entirely if the result would be negative.
-5. Changes are **additive** — multiple variations accumulate.
-
----
-
-## 9. Output System
-
-### Abstract Interface
-
-The `Output` base class defines a single pure virtual method:
-
-```cpp
-virtual void output(const SimulationResult& result) = 0;
-```
 
 ### Two Modes of Operation
 
@@ -883,21 +739,22 @@ The Makefile adds `-I` flags for `components/`, `output/`, and `simulation/`, so
 
 ### Basic Simulation (configured in main.cpp)
 
-The current `main.cpp` creates a device with:
+The `main.cpp` creates a device with:
 
 | Parameter | Value | Meaning |
 |-----------|------:|---------|
-| `Kp` | `10.0` | Proportional gain |
-| `Ki` | `4.0` | Integral gain |
+| `Kp` | `5.0` | Proportional gain |
+| `Ki` | `2.0` | Integral gain |
 | `Kd` | `0.01` | Derivative gain |
 | `maxVoltage` | `200.0` | Upper voltage limit |
 | `minVoltage` | `-200.0` | Lower voltage limit |
 | `inertia` | `0.01` | Motor inertia J |
-| `friction` | `0.1` | Friction coefficient b |
-| `motorConstant` | `0.01` | Motor constant K |
+| `friction` | `0.05` | Friction coefficient b |
+| `motorConstant` | `0.1` | Motor constant K |
 | `targetSpeed` | `20.0` | Desired angular speed (rad/s) |
 | `timeStep` | `0.01` | Simulation step (seconds) |
-| `totalTime` | `25.0` | Duration (seconds) |
+| `totalTime` | `15.0` | Duration (seconds) |
+
 
 ### Adding Variations at Runtime
 

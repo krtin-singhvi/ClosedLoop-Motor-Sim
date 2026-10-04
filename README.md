@@ -28,7 +28,9 @@ a CSV file.
 │   ├── device.*           # High-level simulation wrapper
 │   ├── simulator.*        # Simulation loop and variations
 │   ├── simulationresult.* # Recorded samples
-│   └── variation.*        # Scheduled motor changes
+│   ├──variation.*         # Scheduled motor changes
+│   └──threadSafeQueue.h   #Multi-threaded support
+|   
 └── output/
     ├── output.h           # Output interface (abstract)
     ├── consoleoutput.*    # console output
@@ -75,20 +77,19 @@ The values currently used by `main.cpp` are:
 
 | Parameter | Value | Meaning |
 |---|---:|---|
-| `Kp` | `10.0` | Proportional gain |
-| `Ki` | `4.0` | Integral gain |
-| `Kd` | `0.01` | Derivative gain |
+| `Kp` | `5.0` | Proportional gain |
+| `Ki` | `2.0` | Integral gain |
+| `Kd` | `0.01` | Derivative gain |  
 | `maxVoltage` | `200.0` | Upper Voltage limit to motor|
 | `minVoltage` | `-200.0` | Lower Voltage limit to motor|
 | `inertia` | `0.01` | Motor inertia `J` |
-| `friction` | `0.1` | Motor friction coefficient `b` |
-| `motorConstant` | `0.01` | Motor torque constant `K` |
+| `friction` | `0.05` | Motor friction coefficient `b` |
+| `motorConstant` | `0.1` | Motor torque constant `K` |
 | `targetSpeed` | `20` | Desired angular speed |
 | `timeStep` | `0.01` | Simulation step in seconds |
-| `totalTime` | `25.0` | Simulation duration in seconds |
+| `totalTime` | `15.0` | Simulation duration in seconds |
 
-`main.cpp` sends the resulting samples to `ConsoleOutput`. CSV output can be
-added with:
+(The values can be tuned by the user too, but may cause oscillatory/ unstable behaviour, which is expected for bad values for PID and motor constant)
 
 ```cpp
 #include "csvoutput.h"
@@ -96,74 +97,41 @@ added with:
 CSVOutput csv("results.csv");
 csv.output(device.getResult());
 ```
+## Simulation Loop (each step)
 
-## Simulation model
+1. **Apply variations** — if any `Variation` is scheduled at or before the current time, add its load and friction changes to the motor.
+2. **Read speed** — get the motor's current angular speed.
+3. **Compute error** — `error = targetSpeed - actualSpeed`.
+4. **Compute control** — pass the error through the PID controller to get a clamped voltage.
+5. **Record sample** — store `{time, targetSpeed, actualSpeed, error, controlInput}` in `SimulationResult`.
+6. **Update motor** — apply the control voltage and advance the motor's speed by one time step.
+7. **Advance time** — `currentTime += dt`.
 
-The motor state is its angular speed `w`. For each simulation step, the motor
-uses:
+### Step Count
 
-```text
-J * dw/dt = K * V - b * w - T
-```
-
-where:
-
-- `J` is inertia
-- `b` is the friction coefficient
-- `K` is the motor constant
-- `V` is the controller voltage input
-- `T` is the external load torque
-
-The implementation uses explicit Euler integration:
-
-```text
-w(next) = w + (K * V - b * w - T) * dt / J
-```
-
-At each step, the simulator:
-
-1. Applies any variations whose scheduled time has been reached.
-2. Reads the current motor speed.
-3. Computes the error as `targetSpeed - actualSpeed`.
-4. Sends the error to Controller to compute control voltage.
-5. Records a `SimulationData` sample.
-6. Advances the motor by one time step.
-
-The recorded sample contains:
-
-| Field | Description |
-|---|---|
-| `time` | Current simulation time |
-| `targetSpeed` | Requested speed |
-| `actualSpeed` | Motor speed before the current update |
-| `error` | Target speed minus actual speed |
-| `controlInput` | Clamped voltage applied for the next update |
-
-## Controller
-
-`Controller` combines the four component classes:
-
-```text
-P = Kp * error
-I = Ki * integral(error * dt)
-D = Kd * derivative(error)
-Clamp
-```
-
-## Variations
-
-Variations are added to a `Simulator` and are processed in time order:
+Both single-threaded and multithreaded modes use the same formula:
 
 ```cpp
-simulator.addVariation(Variation(
-    5.0,   // scheduled time in seconds
-    0.05,  // load torque change
-    0.0    // friction change
-));
+int totalSteps = static_cast<int>(totalTime / dt) + 1;
 ```
 
-Load and friction values are additive. The motor prevents its load torque and
-friction coefficient from becoming negative.
+With `totalTime = 25.0` and `dt = 0.01`, this produces **2501 samples** (time 0.00 through 25.00).
+
+---
+
+### Anti-Windup
+
+**The problem:** When the output is saturated (clamped), the integral term keeps accumulating error even though the system can't respond to a larger signal. When the error eventually reverses, the accumulated integral causes a delayed, excessive response — this is called **integral windup**.
+
+**The solution in this codebase:** Before updating the integral, the controller checks:
+1. Would the tentative output `(P + I_old + D)` be clamped?
+2. Does the error have the same sign as the tentative output?
+
+If **both** conditions are true, the integral is frozen — `I.compute(0, dt)` is called instead of `I.compute(error, dt)`. This prevents the integral from growing further in the direction that's already saturated.
+
+See: [controller.cpp](components/controller.cpp)
+
+---
 
 ## Output formats
 
