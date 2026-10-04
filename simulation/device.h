@@ -4,25 +4,44 @@
 #include "motor.h"
 #include "simulator.h"
 
-class Device {
+class Device
+{
 private:
+
     Controller pidc;
     Motor motor;
     Comparator cmp;
     SimulationResult result;
-    void getVariations(Simulator& simulator);
+    Simulator simulator;
 
 public:
-    Device(double _Kp,
-           double _Ki,
-           double _Kd,
-           double maxv, 
-           double minv,
-           double j,
-           double b,
-           double k,
-           double tar,
-           double DT,
-           double ti);
+
+    Device(
+        double _Kp,
+        double _Ki,
+        double _Kd,
+        double maxv,
+        double minv,
+        double j,
+        double b,
+        double k,
+        double tar,
+        double DT,
+        double ti
+    );
+
+    void addVariation(
+        const Variation& variation
+    );
+
+    void runSimulation();
+
+    void runMultithreaded(
+        ThreadSafeQueue<double>& controlQueue,
+        ThreadSafeQueue<double>& speedQueue,
+        ThreadSafeQueue<SimulationData>& consoleQueue,
+        ThreadSafeQueue<SimulationData>& csvQueue
+    );
+
     const SimulationResult& getResult() const;
 };
