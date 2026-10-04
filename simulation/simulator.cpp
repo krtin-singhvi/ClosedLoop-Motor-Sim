@@ -31,7 +31,7 @@ void Simulator::runSimulation() {
 	     return a.getTime() < b.getTime();
 	     });
 	
-	int variationIdx = 0;
+	size_t variationIdx = 0;
 
 	cout << "Starting simulation for " << totalTime << " seconds.." << endl;
 	
@@ -53,8 +53,6 @@ void Simulator::runSimulation() {
 			cout << endl;
 			variationIdx++;
 		}
-
-
 		
 		double actualSpeed = motor->getSpeed();	
 	
@@ -68,5 +66,70 @@ void Simulator::runSimulation() {
 		currentTime += dt;
 	}
 	cout << "Simulation Complete.." << endl;
+}
+
+void Simulator::runMultiThreaded(
+    ThreadSafeQueue<double>& controlQueue,
+    ThreadSafeQueue<double>& speedQueue,
+    ThreadSafeQueue<SimulationData>& consoleQueue,
+    ThreadSafeQueue<SimulationData>& csvQueue
+)
+{
+    double time = 0.0;
+    size_t variationIdx = 0;
+
+    while (time <= totalTime)
+    {
+        // Apply environmental variations
+        while (variationIdx < variations.size() &&
+               variations[variationIdx].getTime() <= time)
+        {
+            motor.applyVariation(variations[variationIdx]);
+            variationIdx++;
+        }
+
+        // Get motor speed
+        double actualSpeed = motor.getSpeed();
+
+        // Send speed to controller
+        speedQueue.push(actualSpeed);
+
+        // Wait for controller output
+        double controlInput;
+
+        if (!controlQueue.pop(controlInput))
+            break;
+
+        // Apply controller output to motor
+        motor.update(controlInput, dt);
+
+        // Calculate error
+        double error = comparator.compute(
+            targetSpeed,
+            actualSpeed
+        );
+
+        // Create simulation data
+        SimulationData data;
+
+        data.time = time;
+        data.targetSpeed = targetSpeed;
+        data.actualSpeed = actualSpeed;
+        data.error = error;
+        data.controlInput = controlInput;
+
+        // Store result
+        result.write(data);
+
+        // Send data to output threads
+        consoleQueue.push(data);
+        csvQueue.push(data);
+
+        time += dt;
+    }
+
+    // Tell output queues that no more data will arrive
+    consoleQueue.close();
+    csvQueue.close();
 }
 		
