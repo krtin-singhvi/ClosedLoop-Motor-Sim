@@ -68,68 +68,139 @@ void Simulator::runSimulation() {
 	cout << "Simulation Complete.." << endl;
 }
 
-void Simulator::runMultiThreaded(
+void Simulator::runMultithreaded(
     ThreadSafeQueue<double>& controlQueue,
     ThreadSafeQueue<double>& speedQueue,
     ThreadSafeQueue<SimulationData>& consoleQueue,
-    ThreadSafeQueue<SimulationData>& csvQueue
-)
+    ThreadSafeQueue<SimulationData>& csvQueue)
 {
-    double time = 0.0;
+    sort(
+        variations.begin(),
+        variations.end(),
+        [](const Variation& a, const Variation& b)
+        {
+            return a.getTime() < b.getTime();
+        }
+    );
+
     size_t variationIdx = 0;
 
-    while (time <= totalTime)
+    int totalSteps =
+        static_cast<int>(totalTime / dt) + 1;
+
+    cout << "Starting MULTITHREADED simulation for "
+         << totalTime
+         << " seconds.."
+         << endl;
+
+    /*
+     * MOTOR THREAD
+     */
+    thread motorThread([&]()
     {
-        // Apply environmental variations
-        while (variationIdx < variations.size() &&
-               variations[variationIdx].getTime() <= time)
+        double currentTime = 0.0;
+
+        // Send initial motor speed
+        speedQueue.push(motor->getSpeed());
+
+        for (int step = 0; step < totalSteps; step++)
         {
-            motor.applyVariation(variations[variationIdx]);
-            variationIdx++;
+            double controlInput;
+
+            if (!controlQueue.pop(controlInput))
+                break;
+
+            motor->updateSpeed(
+                controlInput,
+                dt
+            );
+
+            currentTime += dt;
+
+            while (
+                variationIdx < variations.size() &&
+                currentTime >= variations[variationIdx].getTime()
+            )
+            {
+                double loadChange =
+                    variations[variationIdx].getLoadChange();
+
+                double frictionChange =
+                    variations[variationIdx].getFrictionChange();
+
+                motor->addLoad(loadChange);
+                motor->addFriction(frictionChange);
+
+                variationIdx++;
+            }
+
+            speedQueue.push(
+                motor->getSpeed()
+            );
         }
 
-        // Get motor speed
-        double actualSpeed = motor.getSpeed();
+        speedQueue.close();
+    });
 
-        // Send speed to controller
-        speedQueue.push(actualSpeed);
 
-        // Wait for controller output
-        double controlInput;
+    /*
+     * CONTROLLER THREAD
+     */
+    thread controllerThread([&]()
+    {
+        double currentTime = 0.0;
 
-        if (!controlQueue.pop(controlInput))
-            break;
+        for (int step = 0; step < totalSteps; step++)
+        {
+            double actualSpeed;
 
-        // Apply controller output to motor
-        motor.update(controlInput, dt);
+            if (!speedQueue.pop(actualSpeed))
+                break;
 
-        // Calculate error
-        double error = comparator.compute(
-            targetSpeed,
-            actualSpeed
-        );
+            double error =
+                comparator->getError(
+                    target,
+                    actualSpeed
+                );
 
-        // Create simulation data
-        SimulationData data;
+            double controlInput =
+                controller->compute(
+                    error,
+                    dt
+                );
 
-        data.time = time;
-        data.targetSpeed = targetSpeed;
-        data.actualSpeed = actualSpeed;
-        data.error = error;
-        data.controlInput = controlInput;
+            SimulationData data;
 
-        // Store result
-        result.write(data);
+            data.time = currentTime;
+            data.targetSpeed = target;
+            data.actualSpeed = actualSpeed;
+            data.error = error;
+            data.controlInput = controlInput;
 
-        // Send data to output threads
-        consoleQueue.push(data);
-        csvQueue.push(data);
+            result->write(
+                data.time,
+                data.targetSpeed,
+                data.actualSpeed,
+                data.error,
+                data.controlInput
+            );
 
-        time += dt;
-    }
+            consoleQueue.push(data);
+            csvQueue.push(data);
 
-    // Tell output queues that no more data will arrive
-    consoleQueue.close();
-    csvQueue.close();
+            controlQueue.push(controlInput);
+
+            currentTime += dt;
+        }
+
+        controlQueue.close();
+        consoleQueue.close();
+        csvQueue.close();
+    });
+	
+    controllerThread.join();
+    motorThread.join();
+
+    cout << "Multithreaded simulation complete."
+         << endl;
 }
-		
