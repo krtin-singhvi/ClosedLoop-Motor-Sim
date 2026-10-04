@@ -10,6 +10,7 @@ private:
     Motor motor;
     Comparator cmp;
     SimulationResult result;
+    void getVariations(Simulator& simulator);
 
 public:
     Device(double _Kp,
