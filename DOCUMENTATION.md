@@ -6,8 +6,8 @@
 2. [Architecture](#2-architecture)
 3. [Project Structure](#3-project-structure)
 4. [Class Reference](#4-class-reference)
-5. [Build System](#10-build-system)
-6. [Usage Examples](#11-usage-examples)
+5. [Build System](#5-build-system)
+6. [Usage Examples](#6-usage-examples)
 
 ---
 
