@@ -36,7 +36,7 @@ public:
 
     void runSimulation();
 
-    void runMultithreaded(
+    void runMultiThreaded(
         ThreadSafeQueue<double>& controlQueue,
         ThreadSafeQueue<double>& speedQueue,
         ThreadSafeQueue<SimulationData>& consoleQueue,

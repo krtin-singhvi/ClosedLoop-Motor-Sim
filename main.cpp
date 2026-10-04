@@ -5,7 +5,7 @@
 #include "device.h"
 #include "consoleoutput.h"
 #include "csvoutput.h"
-#include "threadsafequeue.h"
+#include "threadSafeQueue.h"
 
 using namespace std;
 
@@ -113,7 +113,7 @@ int main()
         /*
          * START SIMULATION
          */
-        dev.runMultithreaded(
+        dev.runMultiThreaded(
             controlQueue,
             speedQueue,
             consoleQueue,
