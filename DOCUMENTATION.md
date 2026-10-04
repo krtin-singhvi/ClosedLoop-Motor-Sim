@@ -366,7 +366,7 @@ Data structure holding one simulation sample per time step.
 
 **Source:** [simulationresult.h](simulation/simulationresult.h) | [simulationresult.cpp](simulation/simulationresult.cpp)
 
-Thread-safe container for recorded simulation samples.
+Container for recorded simulation samples.
 
 | Variable | Type | Description |
 |----------|------|-------------|
@@ -435,7 +435,7 @@ SimulationResult returnResult() const;
 
 ---
 
-### 4.13 `Output` (abstract)
+### 4.12 `Output` (abstract)
 
 **Source:** [output.h](output/output.h)
 
@@ -451,7 +451,7 @@ public:
 
 ---
 
-### 4.14 `ConsoleOutput`
+### 4.13 `ConsoleOutput`
 
 **Source:** [consoleoutput.h](output/consoleoutput.h) | [consoleoutput.cpp](output/consoleoutput.cpp)
 
@@ -468,7 +468,7 @@ Prints simulation results as a formatted table to `stdout`.
 
 ---
 
-### 4.15 `CSVOutput`
+### 4.14 `CSVOutput`
 
 **Source:** [csvoutput.h](output/csvoutput.h) | [csvoutput.cpp](output/csvoutput.cpp)
 
