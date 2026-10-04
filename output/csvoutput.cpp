@@ -1,5 +1,5 @@
 #include "csvoutput.h"
-#include <fstream>
+
 #include <iostream>
 #include <stdexcept>
 
@@ -10,33 +10,49 @@ CSVOutput::CSVOutput(const string& filename)
 {
 }
 
-void CSVOutput::output(const SimulationResult& result)
+void CSVOutput::start()
 {
-    ofstream file(filename);
+    file.open(filename);
 
     if (!file.is_open())
     {
-        throw std::runtime_error("Error: Could not open file: " + filename);
+        throw runtime_error(
+            "Error: Could not open file: " + filename
+        );
     }
-    // this can be because of permission problem or invalid file name or 
-    // directory doesn't exist
 
     file << "Time,TargetSpeed,ActualSpeed,Error,ControlInput\n";
-    // this is done as that is written in " " goes into the file which is created 
+}
 
-    const vector<SimulationData>& data = result.getData();
+void CSVOutput::outputRow(const SimulationData& row)
+{
+    file << row.time << ","
+         << row.targetSpeed << ","
+         << row.actualSpeed << ","
+         << row.error << ","
+         << row.controlInput << "\n";
+}
 
-    for (const SimulationData& row : data)
-    {
-        file << row.time << ","
-             << row.targetSpeed << ","
-             << row.actualSpeed << ","
-             << row.error << ","
-             << row.controlInput << "\n";
-    }
-
+void CSVOutput::finish()
+{
     file.close();
 
     cout << "CSV file saved: "
-         << filename << endl;
+         << filename
+         << endl;
+}
+
+void CSVOutput::output(const SimulationResult& result)
+{
+    start();
+
+    const vector<SimulationData>& data =
+        result.getData();
+
+    for (const SimulationData& row : data)
+    {
+        outputRow(row);
+    }
+
+    finish();
 }
