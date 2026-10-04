@@ -32,6 +32,8 @@ The motor is modeled as a first-order system with inertia, friction, and an opti
 
 ---
 
+## 2. Architecture
+
 ```mermaid
 classDiagram
     class Simulator {
@@ -514,7 +516,7 @@ Written to the filename specified in the `CSVOutput` constructor.
 
 ---
 
-## 10. Build System
+## 5. Build System
 
 ### Requirements
 
@@ -551,7 +553,34 @@ The Makefile adds `-I` flags for `components/`, `output/`, and `simulation/`, so
 
 ---
 
-## 11. Usage Examples
+## 6. Usage Examples
+
+    ```cpp
+        Simulator sim(
+            5.0,
+            2,
+            0.01,
+            200.0,
+            -200.0,
+            0.01,
+            0.05,
+            0.1,
+            20.0,
+            0.01,
+            15.0
+        ); #Initialize simulator
+
+        sim.addVariation(); #asks input from user
+        sim.runSimulation(); #runs the simulation loop
+
+        SimulationResult r = sim.returnResult(); #returns SimulationResult object
+
+        CSVOutput csv("simulation.csv");
+        ConsoleOutput out();
+
+        csv.output(r); #prints to "simulation.csv"
+        out.output(r); #prints to stdout
+    ```
 
 ### Basic Simulation (configured in main.cpp)
 
