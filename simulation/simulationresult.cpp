@@ -1,7 +1,5 @@
 #include "simulationresult.h"
 
-using namespace std;
-
 void SimulationResult::write(double time,double targetSpeed,double actualSpeed,double error,double controlInput)
 {
     SimulationData row;
@@ -12,15 +10,18 @@ void SimulationResult::write(double time,double targetSpeed,double actualSpeed,d
     row.error = error;
     row.controlInput = controlInput;
 
+    std::lock_guard<std::mutex> lock(mtx);
     data.push_back(row);
 }
 
-const vector<SimulationData>& SimulationResult::getData() const
+std::vector<SimulationData> SimulationResult::getData() const
 {
+    std::lock_guard<std::mutex> lock(mtx);
     return data;
 }
 
 int SimulationResult::size() const
 {
+    std::lock_guard<std::mutex> lock(mtx);
     return data.size();
 }

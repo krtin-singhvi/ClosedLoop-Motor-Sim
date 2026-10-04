@@ -2,8 +2,7 @@
 #define SIMULATIONRESULT_H
 
 #include <vector>
-
-using namespace std;
+#include <mutex>
 
 struct SimulationData
 {
@@ -17,12 +16,13 @@ struct SimulationData
 class SimulationResult
 {
 private:
-    vector<SimulationData> data;
+    std::vector<SimulationData> data;
+    mutable std::mutex mtx;
 
 public:
     void write(double time,double targetSpeed,double actualSpeed,double error,double controlInput);
 
-    const vector<SimulationData>& getData() const;
+    std::vector<SimulationData> getData() const;
 
     int size() const;
 };

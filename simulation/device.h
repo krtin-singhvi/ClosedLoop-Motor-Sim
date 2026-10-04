@@ -25,9 +25,9 @@ public:
         double j,
         double b,
         double k,
-        double tar,
-        double DT,
-        double ti
+        double target,
+        double dt,
+        double time
     );
 
     void addVariation(

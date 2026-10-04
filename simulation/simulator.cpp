@@ -33,9 +33,11 @@ void Simulator::runSimulation() {
 	
 	size_t variationIdx = 0;
 
+	int totalSteps = static_cast<int>(totalTime / dt) + 1;
+
 	cout << "Starting simulation for " << totalTime << " seconds.." << endl;
 	
-	while(currentTime <= totalTime){
+	for(int step = 0; step < totalSteps; step++){
 		// Process scheduled loads
 		while(variationIdx < variations.size() && currentTime >= variations[variationIdx].getTime()){
 			double loadChange = variations[variationIdx].getLoadChange();
@@ -83,8 +85,6 @@ void Simulator::runMultiThreaded(
         }
     );
 
-    size_t variationIdx = 0;
-
     int totalSteps =
         static_cast<int>(totalTime / dt) + 1;
 
@@ -99,6 +99,7 @@ void Simulator::runMultiThreaded(
     thread motorThread([&]()
     {
         double currentTime = 0.0;
+        size_t variationIdx = 0;
 
         // Send initial motor speed
         speedQueue.push(motor->getSpeed());

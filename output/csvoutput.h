@@ -5,17 +5,15 @@
 #include <string>
 #include <fstream>
 
-using namespace std;
-
 class CSVOutput : public Output
 {
 private:
-    string filename;
-    ofstream file;
+    std::string filename;
+    std::ofstream file;
 
 public:
 
-    CSVOutput(const string& filename);
+    CSVOutput(const std::string& filename);
 
     void output(const SimulationResult& result) override;
 

@@ -15,18 +15,19 @@ private:
 
 public:
 
-    void push(const T& value)
+    bool push(const T& value)
     {
         {
             std::lock_guard<std::mutex> lock(mutex);
 
             if (closed)
-                return;
+                return false;
 
             queue.push(value);
         }
 
         condition.notify_one();
+        return true;
     }
 
     bool pop(T& value)
