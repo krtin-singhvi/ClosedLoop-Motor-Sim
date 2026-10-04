@@ -41,14 +41,14 @@ void Device::runSimulation()
     simulator.runSimulation();
 }
 
-void Device::runMultithreaded(
+void Device::runMultiThreaded(
     ThreadSafeQueue<double>& controlQueue,
     ThreadSafeQueue<double>& speedQueue,
     ThreadSafeQueue<SimulationData>& consoleQueue,
     ThreadSafeQueue<SimulationData>& csvQueue
 )
 {
-    simulator.runMultithreaded(
+    simulator.runMultiThreaded(
         controlQueue,
         speedQueue,
         consoleQueue,
