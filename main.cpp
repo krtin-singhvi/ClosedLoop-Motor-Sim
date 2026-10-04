@@ -1,11 +1,8 @@
 #include <iostream>
 #include <exception>
-#include <thread>
-
-#include "device.h"
+#include "simulator.h"
 #include "consoleoutput.h"
 #include "csvoutput.h"
-#include "threadSafeQueue.h"
 
 using namespace std;
 
@@ -13,7 +10,7 @@ int main()
 {
     try
     {
-        Device dev(
+        Simulator sim(
             5.0,
             2,
             0.01,
@@ -27,112 +24,18 @@ int main()
             15.0
         );
 
-        int numberOfVariations;
+        sim.addVariation();
+        sim.runSimulation();
 
-        cout << "Enter number of variations: ";
-        cin >> numberOfVariations;
+        SimulationResult r = sim.returnResult();
 
-        for (int i = 0; i < numberOfVariations; i++)
-        {
-            double time;
-            double loadChange;
-            double frictionChange;
+        CSVOutput csv("simulation.csv");
+        ConsoleOutput out;
 
-            cout << "\nVariation " << i + 1 << endl;
-
-            cout << "Enter time (seconds): ";
-            cin >> time;
-
-            cout << "Enter load change: ";
-            cin >> loadChange;
-
-            cout << "Enter friction change: ";
-            cin >> frictionChange;
-
-            dev.addVariation(
-                Variation(
-                    time,
-                    loadChange,
-                    frictionChange
-                )
-            );
-        }
-
-        ThreadSafeQueue<double> controlQueue;
-
-        ThreadSafeQueue<double> speedQueue;
-
-        ThreadSafeQueue<SimulationData>
-            consoleQueue;
-
-        ThreadSafeQueue<SimulationData>
-            csvQueue;
-
-        ConsoleOutput consoleOutput;
-
-        CSVOutput csvOutput(
-            "simulation.csv"
-        );
-
-        /*
-         * CONSOLE THREAD
-         */
-        thread consoleThread([&]()
-        {
-            consoleOutput.start();
-
-            SimulationData data;
-
-            while (consoleQueue.pop(data))
-            {
-                consoleOutput.outputRow(data);
-            }
-
-            consoleOutput.finish();
-        });
+        csv.output(r);
+        out.output(r);
 
 
-        /*
-         * CSV THREAD
-         */
-        thread csvThread([&]()
-        {
-            csvOutput.start();
-
-            SimulationData data;
-
-            while (csvQueue.pop(data))
-            {
-                csvOutput.outputRow(data);
-            }
-
-            csvOutput.finish();
-        });
-
-
-        /*
-         * START SIMULATION
-         */
-        dev.runMultiThreaded(
-            controlQueue,
-            speedQueue,
-            consoleQueue,
-            csvQueue
-        );
-
-
-        /*
-         * WAIT FOR OUTPUT THREADS
-         */
-        consoleThread.join();
-        csvThread.join();
-
-        cout << "\nSimulation finished successfully."
-             << endl;
-
-        cout << "Total samples: "
-             << dev.getResult().size()
-             << endl;
     }
     catch (const exception& e)
     {

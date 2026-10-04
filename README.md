@@ -25,11 +25,9 @@ a CSV file.
 │   ├── motor.*            # Motor dynamics
 │   └── pid_components.*   # P, I, and D components
 ├── simulation/
-│   ├── device.*           # High-level simulation wrapper
-│   ├── simulator.*        # Simulation loop and variations
+│   ├── simulator.*        # Simulation loop and variations, owns motor, controller, and other components.
 │   ├── simulationresult.* # Recorded samples
-│   ├──variation.*         # Scheduled motor changes
-│   └──threadSafeQueue.h   #Multi-threaded support
+│   └──variation.*         # Scheduled motor changes
 |   
 └── output/
     ├── output.h           # Output interface (abstract)
@@ -62,10 +60,10 @@ Remove generated object files, dependency files, and the executable:
 make clean
 ```
 
-The current example creates a `Device` with these parameters, in order:
+The current example creates a `Simulator` with these parameters, in order:
 
 ```cpp
-Device device(
+Simulator sim(
     Kp, Ki, Kd,
     maxVoltage, minVoltage,
     inertia, friction, motorConstant,
@@ -95,7 +93,7 @@ The values currently used by `main.cpp` are:
 #include "csvoutput.h"
 
 CSVOutput csv("results.csv");
-csv.output(device.getResult());
+csv.output(sim.returnResult());
 ```
 ## Simulation Loop (each step)
 
@@ -109,10 +107,8 @@ csv.output(device.getResult());
 
 ### Step Count
 
-Both single-threaded and multithreaded modes use the same formula:
-
 ```cpp
-int totalSteps = static_cast<int>(totalTime / dt) + 1;
+int totalSteps = (int)(totalTime / dt) + 1;
 ```
 
 With `totalTime = 25.0` and `dt = 0.01`, this produces **2501 samples** (time 0.00 through 25.00).

@@ -3,44 +3,42 @@
 #include <iostream>
 #include <iomanip>
 
-using namespace std;
-
 void ConsoleOutput::start()
 {
-    cout << "\n";
-    cout << "Simulation Results\n";
-    cout << "-------------------------------------------------------------\n";
+    std::cout << "\n";
+    std::cout << "Simulation Results\n";
+    std::cout << "-------------------------------------------------------------\n";
 
-    cout << setw(10) << "Time"
-         << setw(15) << "Target"
-         << setw(15) << "Speed"
-         << setw(15) << "Error"
-         << setw(15) << "Control"
+    std::cout << std::setw(10) << "Time"
+         << std::setw(15) << "Target"
+         << std::setw(15) << "Speed"
+         << std::setw(15) << "Error"
+         << std::setw(15) << "Control"
          << "\n";
 
-    cout << "-------------------------------------------------------------\n";
+    std::cout << "-------------------------------------------------------------\n";
 }
 
 void ConsoleOutput::outputRow(const SimulationData& row)
 {
-    cout << setw(10) << row.time
-         << setw(15) << row.targetSpeed
-         << setw(15) << row.actualSpeed
-         << setw(15) << row.error
-         << setw(15) << row.controlInput
+    std::cout << std::setw(10) << row.time
+         << std::setw(15) << row.targetSpeed
+         << std::setw(15) << row.actualSpeed
+         << std::setw(15) << row.error
+         << std::setw(15) << row.controlInput
          << "\n";
 }
 
 void ConsoleOutput::finish()
 {
-    cout << "-------------------------------------------------------------\n";
+    std::cout << "-------------------------------------------------------------\n";
 }
 
 void ConsoleOutput::output(const SimulationResult& result)
 {
     start();
 
-    const vector<SimulationData>& data =
+    const std::vector<SimulationData>& data =
         result.getData();
 
     for (const SimulationData& row : data)
@@ -50,7 +48,7 @@ void ConsoleOutput::output(const SimulationResult& result)
 
     finish();
 
-    cout << "Total samples: "
+    std::cout << "Total samples: "
          << result.size()
          << "\n";
 }

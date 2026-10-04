@@ -7,7 +7,7 @@ class Proportional{
     public:
         Proportional(double _Kp);
         void compute(double e_t, double dt);
-        double getControl();
+        double getControl() const;
 };
 
 class Integral{
@@ -17,7 +17,7 @@ class Integral{
     public:
         Integral(double _Ki);
         void compute(double e_t, double dt);
-        double getControl();
+        double getControl() const;
         
 };
 
@@ -31,6 +31,6 @@ class Derivative{
     public:
         Derivative(double _Kd);
         void compute(double e_t, double dt);
-        double getControl();
+        double getControl() const;
 
 };

@@ -1,11 +1,12 @@
 #pragma once
+
 class Clamp{
     private:
-        double maxV;
-        double minV;
+        const double maxV;
+        const double minV;
     public:
         Clamp(double _maxV, double _minV);
-        double clamp(double input);
+        double clamp(double input) const;
 };
 
 class Comparator{

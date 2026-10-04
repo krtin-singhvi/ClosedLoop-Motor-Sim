@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -Wall -Wextra -std=c++17 -pthread \
+CXXFLAGS = -Wall -Wextra -std=c++17 \
            -Icomponents \
            -Ioutput \
            -Isimulation \
@@ -14,7 +14,6 @@ SOURCES = main.cpp \
 		  components/controller.cpp \
           output/consoleoutput.cpp \
           output/csvoutput.cpp \
-          simulation/device.cpp \
           simulation/simulationresult.cpp \
           simulation/simulator.cpp \
 		  simulation/variation.cpp \
@@ -25,7 +24,7 @@ DEPENDS = $(OBJECTS:.o=.d)
 
 
 $(TARGET): $(OBJECTS)
-	$(CXX) $(OBJECTS) -pthread -o $(TARGET)
+	$(CXX) $(OBJECTS) -o $(TARGET)
 
 
 %.o: %.cpp

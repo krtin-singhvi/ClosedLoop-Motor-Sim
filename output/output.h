@@ -1,5 +1,4 @@
-#ifndef OUTPUT_H
-#define OUTPUT_H
+#pragma once
 
 #include "simulationresult.h"
 
@@ -10,5 +9,3 @@ public:
 
     virtual ~Output() = default;
 };
-
-#endif

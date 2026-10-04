@@ -9,7 +9,6 @@ bool compareSign(double a, double b){
 Controller::Controller(double kp, double ki, double kd, double maxv, double minv): P(kp), I(ki), D(kd), clamp(maxv, minv){}
 
 double Controller::compute(double error, double dt){
-
     P.compute(error, dt);
     D.compute(error, dt);
 
