@@ -556,31 +556,32 @@ The Makefile adds `-I` flags for `components/`, `output/`, and `simulation/`, so
 ## 6. Usage Examples
 
     ```cpp
-        Simulator sim(
-            5.0,
-            2,
-            0.01,
-            200.0,
-            -200.0,
-            0.01,
-            0.05,
-            0.1,
-            20.0,
-            0.01,
-            15.0
-        ); #Initialize simulator
+    Simulator sim(
+        5.0,
+        2,
+        0.01,
+        200.0,
+        -200.0,
+        0.01,
+        0.05,
+        0.1,
+        20.0,
+        0.01,
+        15.0
+    ); //Initialize simulator
 
-        sim.addVariation(); #asks input from user
-        sim.runSimulation(); #runs the simulation loop
+    sim.addVariation(); //asks input from user
+    sim.runSimulation(); //runs the simulation loop
 
-        SimulationResult r = sim.returnResult(); #returns SimulationResult object
+    SimulationResult r = sim.returnResult(); //returns SimulationResult object
 
-        CSVOutput csv("simulation.csv");
-        ConsoleOutput out();
+    CSVOutput csv("simulation.csv");
+    ConsoleOutput out();
 
-        csv.output(r); #prints to "simulation.csv"
-        out.output(r); #prints to stdout
+    csv.output(r); //prints to "simulation.csv"
+    out.output(r); //prints to stdout
     ```
+    
 
 ### Basic Simulation (configured in main.cpp)
 
