@@ -555,7 +555,7 @@ The Makefile adds `-I` flags for `components/`, `output/`, and `simulation/`, so
 
 ## 6. Usage Examples
 
-    ```cpp
+```cpp
     Simulator sim(
         5.0,
         2,
@@ -580,7 +580,7 @@ The Makefile adds `-I` flags for `components/`, `output/`, and `simulation/`, so
 
     csv.output(r); //prints to "simulation.csv"
     out.output(r); //prints to stdout
-    ```
+```
     
 
 ### Basic Simulation (configured in main.cpp)
