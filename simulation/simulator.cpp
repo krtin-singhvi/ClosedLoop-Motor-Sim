@@ -68,7 +68,7 @@ void Simulator::runSimulation() {
 	cout << "Simulation Complete.." << endl;
 }
 
-void Simulator::runMultithreaded(
+void Simulator::runMultiThreaded(
     ThreadSafeQueue<double>& controlQueue,
     ThreadSafeQueue<double>& speedQueue,
     ThreadSafeQueue<SimulationData>& consoleQueue,
