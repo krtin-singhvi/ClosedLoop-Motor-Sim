@@ -113,7 +113,7 @@ int main()
         /*
          * START SIMULATION
          */
-        dev.runMultithreaded(
+        dev.runMultiThreaded(
             controlQueue,
             speedQueue,
             consoleQueue,
